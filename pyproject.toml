@@ -1,7 +1,7 @@
 [project]
 name = "minecraft-to-bcp47"
 version = "0.1.0"
-description = "Add your description here"
+description = "Maps Minecraft locale codes to web-friendly BCP47 codes"
 readme = "README.md"
 authors = [
     { name = "Aly", email = "me@s5.pm" }
