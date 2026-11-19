@@ -8,12 +8,12 @@ from minecraft_to_bcp47 import MINECRAFT_TO_BCP47
 print(MINECRAFT_TO_BCP47['enws']) # Shakespeare
 ```
 
-## updating
+## Updating
 
 `uv run ./update.py` copies an LLM prompt to the clipboard. Use an advanced model that can connect to the internet. The
 result will be the new table entries.
 
-## building as a wheel
+## Building as a Wheel
 
 ```
 uv build

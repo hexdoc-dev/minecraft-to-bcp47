@@ -1,17 +1,4 @@
 #!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.12"
-# dependencies = [
-#     "minecraft-to-bcp47",
-#     "pyperclip>=1.11.0",
-#     "requests>=2.34.2",
-#     "wikitextparser>=3.0.0",
-# ]
-#
-# [tool.uv.sources]
-# minecraft-to-bcp47 = { path = ".", editable = true }
-# ///
-
 from pathlib import Path
 import pyperclip
 import re
@@ -27,6 +14,9 @@ import minecraft_to_bcp47
 FOOTNOTE_TEMPLATES = {"fn", "efn", "note", "ref", "refn", "su", "#tag:ref"}
 
 WIKI_BASE = "https://minecraft.wiki/"
+
+# python 3.11 doesn't like '\n' inside fstrings
+NEWLINE: typing.Final[str] = "\n"
 
 
 def strip_footnotes(template: wtp.Template) -> str:
@@ -54,18 +44,18 @@ def llm_prompt(old_table: dict[str, str], new_table: dict[str, str]) -> str:
         md_list += f"- {key}: {new_table[key]}\n"
 
     template = textwrap.dedent("""\
-    Map the following newly added Minecraft language table entries to canonical RFC 5646 / BCP 47 language tags.
-    
-    Follow the conventions established in our existing non-standard mappings:
-    - Valid IANA registered variant subtags are preferred over private-use tags (e.g., `enws` -> `en-emodeng`, `rpr` -> `ru-petr1708`, `val_es` -> `ca-ES-valencia`).
-    - Joke/conlang variants without IANA subtags use `-x-` private-use subtags (e.g., `en_pt` -> `en-x-pirate`, `vp_vl` -> `art-x-viossa`).
-    - Strip bogus or placeholder region codes (e.g., `qya_aa` -> `qya`, `eo_uy` -> `eo`).
-    - Replace ISO 639-5 family codes or colliding codes with specific ISO 639-3 subtags (e.g., `fra_de` -> `vmf-DE`).
-    
-    New Wiki rows to map:
-    {md_list}
-    Output ONLY a Python dict literal mapping the Minecraft locale code to the BCP 47 string, with a comment per line explaining the subtag choice.
-    """)
+        Map the following newly added Minecraft language table entries to canonical RFC 5646 / BCP 47 language tags.
+        
+        Follow the conventions established in our existing non-standard mappings:
+        - Valid IANA registered variant subtags are preferred over private-use tags (e.g., `enws` -> `en-emodeng`, `rpr` -> `ru-petr1708`, `val_es` -> `ca-ES-valencia`).
+        - Joke/conlang variants without IANA subtags use `-x-` private-use subtags (e.g., `en_pt` -> `en-x-pirate`, `vp_vl` -> `art-x-viossa`).
+        - Strip bogus or placeholder region codes (e.g., `qya_aa` -> `qya`, `eo_uy` -> `eo`).
+        - Replace ISO 639-5 family codes or colliding codes with specific ISO 639-3 subtags (e.g., `fra_de` -> `vmf-DE`).
+        
+        New Wiki rows to map:
+        {md_list}
+        Output ONLY a Python dict literal mapping the Minecraft locale code to the BCP 47 string, with a comment per line explaining the subtag choice.
+        """)
     return template.format(md_list=md_list)
 
 
@@ -117,7 +107,7 @@ def main():
     sub_headers = [wtp.remove_markup(h).strip() for h in rows[1]]
     headers = [
         # Locale code (JE) and Locale code (BE) and etc...
-        f"{top} ({sub.partition('\n')[0]})" if top != sub else top
+        f"{top} ({sub.partition(NEWLINE)[0]})" if top != sub else top
         for top, sub in zip(top_headers, sub_headers)
     ]
 
@@ -128,7 +118,7 @@ def main():
 
     if not (new_wiki_table.keys() - minecraft_to_bcp47.MINECRAFT_TO_BCP47.keys()):
         print("Already up-to-date.")
-        sys.exit(0)
+        return
 
     prompt = llm_prompt(minecraft_to_bcp47.MINECRAFT_TO_BCP47, new_wiki_table)
 

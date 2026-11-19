@@ -1,3 +1,7 @@
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
 [project]
 name = "minecraft-to-bcp47"
 version = "0.1.0"
@@ -6,9 +10,12 @@ readme = "README.md"
 authors = [
     { name = "Aly", email = "me@s5.pm" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = []
 
-[build-system]
-requires = ["uv_build>=0.13.5,<0.14.0"]
-build-backend = "uv_build"
+[dependency-groups]
+dev = [
+    "pyperclip>=1.11.0",
+    "requests>=2.34.2",
+    "wikitextparser>=3.0.0",
+]
